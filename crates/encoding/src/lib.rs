@@ -155,6 +155,20 @@ impl Encoder {
                     new_owner_address: *new_owner_address,
                 });
             }
+            Message::RegisterNetworksAndAliases { remove, add } => {
+                for index in remove {
+                    self.remove_network(*index);
+                }
+                for (id, _) in add {
+                    self.add_network(id);
+                }
+
+                self.compressed
+                    .push(CompressedMessage::RegisterNetworksAndAliases {
+                        remove: remove.clone(),
+                        add: add.clone(),
+                    });
+            }
         };
         Ok(())
     }
@@ -228,7 +242,7 @@ impl Encoder {
             let delta = ptr.number as i64 - network_data.block_number as i64;
             let acceleration = delta - network_data.block_delta;
 
-            let mut current_network = &mut self.networks[i].1;
+            let current_network = &mut self.networks[i].1;
             current_network.block_number = ptr.number;
             current_network.block_delta = delta;
 
